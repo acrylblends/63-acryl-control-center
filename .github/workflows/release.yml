@@ -46,6 +46,11 @@ jobs:
         working-directory: blend
         shell: bash
         run: npm pkg set version="${GITHUB_REF_NAME#v}"
+      # This folder is the repository; its .github (this workflow) is not part of the app. Left in, a fresh install showed it as an unsaved
+      # deletion (@acryldev/blends 1.7.13 and later leave it out themselves).
+      - name: Leave the repository's own files out of the app
+        shell: bash
+        run: rm -rf blend/.github
       - name: Pack ACRYL Control Center
         shell: bash
         run: npx --yes "$ACRYLBLENDS" pack --from blend --product "ACRYL Control Center" --arch ${{ matrix.arch }} --out out
