@@ -1,6 +1,7 @@
 name: Release
 
-# This Blend as installers on every OS and CPU: a DMG (macOS), an NSIS installer (Windows) and a Debian package (Linux), for arm64 and x64, packed with
+# This Blend as installers on every OS and CPU: a DMG (macOS), an NSIS installer (Windows), a Debian package and a portable tarball with a PKGBUILD
+# (Linux, Arch Linux, Omarchy), for arm64 and x64, packed with
 # the published ACRYL packages (`acrylblends pack` of @acryldev/blends). A tag v<version> publishes them as this repository's Latest release, which is
 # where the README's download links and the installed app's updater look. Run by hand, it packs all six as workflow artifacts and publishes nothing.
 on:
@@ -13,7 +14,7 @@ permissions:
 
 env:
   # The ACRYL release that packs this app; its create makes the app from this folder with the published frame packages.
-  ACRYLBLENDS: '@acryldev/blends@1.7.12'
+  ACRYLBLENDS: '@acryldev/blends@1.7.15'
 
 jobs:
   pack:
@@ -46,11 +47,6 @@ jobs:
         working-directory: blend
         shell: bash
         run: npm pkg set version="${GITHUB_REF_NAME#v}"
-      # This folder is the repository; its .github (this workflow) is not part of the app. Left in, a fresh install showed it as an unsaved
-      # deletion (@acryldev/blends 1.7.13 and later leave it out themselves).
-      - name: Leave the repository's own files out of the app
-        shell: bash
-        run: rm -rf blend/.github
       - name: Pack ACRYL Control Center
         shell: bash
         run: npx --yes "$ACRYLBLENDS" pack --from blend --product "ACRYL Control Center" --arch ${{ matrix.arch }} --out out
@@ -71,6 +67,9 @@ jobs:
         with:
           path: out
           merge-multiple: true
+      # Arch Linux and Omarchy: the PKGBUILD that installs this release's two Linux tarballs (makepkg -si).
+      - name: PKGBUILD for Arch Linux
+        run: npx --yes "$ACRYLBLENDS" pkgbuild --dir out --product "ACRYL Control Center" --version "${GITHUB_REF_NAME#v}" --repo "$GITHUB_REPOSITORY"
       - name: Publish the release as Latest
         env:
           GH_TOKEN: ${{ github.token }}
