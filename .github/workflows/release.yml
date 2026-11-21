@@ -1,0 +1,81 @@
+name: Release
+
+# This Blend as installers on every OS and CPU: a DMG (macOS), an NSIS installer (Windows) and a Debian package (Linux), for arm64 and x64, packed with
+# the published ACRYL packages (`acrylblends pack` of @acryldev/blends). A tag v<version> publishes them as this repository's Latest release, which is
+# where the README's download links and the installed app's updater look. Run by hand, it packs all six as workflow artifacts and publishes nothing.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # The ACRYL release that packs this app; its create makes the app from this folder with the published frame packages.
+  ACRYLBLENDS: '@acryldev/blends@1.7.12'
+
+jobs:
+  pack:
+    name: pack (${{ matrix.platform }} ${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15, platform: mac, arch: arm64 }
+          - { os: macos-15-intel, platform: mac, arch: x64 }
+          - { os: windows-latest, platform: win, arch: x64 }
+          - { os: windows-11-arm, platform: win, arch: arm64 }
+          - { os: ubuntu-24.04, platform: linux, arch: x64 }
+          - { os: ubuntu-24.04-arm, platform: linux, arch: arm64 }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: blend
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      # A Debian package is built with fakeroot and dpkg; the hosted image has dpkg, not always fakeroot.
+      - if: matrix.platform == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot
+      # The About window shows the app's package version: a release carries its tag's (v0.2.5 -> 0.2.5).
+      - name: Version from the tag
+        if: github.event_name == 'push'
+        working-directory: blend
+        shell: bash
+        run: npm pkg set version="${GITHUB_REF_NAME#v}"
+      - name: Pack ACRYL Control Center
+        shell: bash
+        run: npx --yes "$ACRYLBLENDS" pack --from blend --product "ACRYL Control Center" --arch ${{ matrix.arch }} --out out
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.arch }}
+          path: out/*
+          if-no-files-found: error
+
+  release:
+    needs: pack
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Publish the release as Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la out
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --latest --title "ACRYL Control Center $GITHUB_REF_NAME" \
+              --notes "ACRYL Control Center $GITHUB_REF_NAME, ready to install. First start: on macOS the app is not signed yet, so right-click it and choose Open; on Windows, if SmartScreen asks, click More info and then Run anyway; on Linux, double-click the .deb to open it in the Software app."
+          fi
+          # A run that stopped half way leaves the release without the Latest mark: set it after every file is up.
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --latest >/dev/null
