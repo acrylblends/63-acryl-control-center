@@ -14,7 +14,7 @@ permissions:
 
 env:
   # The ACRYL release that packs this app; its create makes the app from this folder with the published frame packages.
-  ACRYLBLENDS: '@acryldev/blends@1.7.15'
+  ACRYLBLENDS: '@acryldev/blends@1.7.17'
 
 jobs:
   pack:
