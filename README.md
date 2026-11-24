@@ -8,6 +8,22 @@ source and builds its releases.
 - plugins to pull into an app and to share from it;
 - the Blends right panel: chat, Claude Code, Codex, Pi and a terminal.
 
+## Get started
+
+Install ACRYL Control Center in one line. No admin, no Node, the download is checked against GitHub's sha256, and Windows and macOS open it without warnings because it is not browser-downloaded.
+
+**macOS and Linux**
+```sh
+curl -fsSL https://acryl.dev/install.sh | bash
+```
+
+**Windows (PowerShell)**
+```powershell
+irm https://acryl.dev/install.ps1 | iex
+```
+
+**Developers:** `npx acryl@latest`
+
 ## Download
 
 The app, ready to install (the latest release, <https://github.com/acrylblends/63-acryl-control-center/releases/latest>):
