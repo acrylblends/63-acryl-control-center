@@ -90,14 +90,7 @@ Most of this app is not written here:
 - **The frame and its parts** (`@acryldev/blends-frame`, `@acryldev/settings` and the other `@acryldev/*` packages in
   `package.json`) and the framework (`acrylblends`) come from npm, built from the same repository (`ide/` and `packages/`). `npm install`
   installs them; `npx acrylblends upgrade` moves `package.json` to the release it brings.
-- **The launcher** is generated from ACRYL, <https://github.com/acryldev/acryl>, by its `scripts/launcher-blend.mjs`:
-  - `plugins/acryl-launcher-host/` (its `index.ts`, `package.json`, `contract.ts`, `door.ts`, `registry.ts`, `route.ts`, `runner.ts`,
-    `service.ts`) is the Host half of acryl's `plugins/launcher-desktop`, with its imports renamed for a Blends app;
-  - `plugins/acryl-launcher-host/launcher-lib/` (8 files) is acryl's `plugins/launcher`, built: its `.js` and `.d.ts` copied as they are;
-  - `public/launcher.js` is the page, acryl's `plugins/launcher-desktop/lib/page.js`.
-
-  Change these in acryl and run the script again with `ACRYL_LAUNCHER_APP` set to this checkout; an edit made here is overwritten. They become one published package in place of the
-  copies with acryl spec 051 (task T010).
+- **The launcher** is the published package `@acryldev/launcher-desktop` (built from <https://github.com/acryldev/acryl>, `plugins/launcher-desktop`), a dependency in `package.json` like the other `@acryldev/*` packages: its Host half is the row `acryl-launcher-desktop` in `blend.yaml` (`src/launcher.ts` tells it where ACRYL's home is), its page is the `lib/page.js` the package ships (`src/routes.ts` serves it), and its tools (`acryl_launcher_apps`, `acryl_launcher_new_app` and the others) go to the chat and to every agent. Nothing of it is copied here; change it in acryl and move the pin.
 
 What is this app's own: `blend.yaml`, `cordis.patch.yml`, `src/` (the root serves the Control Center, the template's first screen is at
 `/home`), `assets/`, the tests and the release workflow.

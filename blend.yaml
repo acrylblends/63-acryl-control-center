@@ -31,8 +31,8 @@ spec:
     # Sharing: `npm run acryl -- plugin pull github:<owner>/<repo>@<version>` installs a plugin someone released (development only).
     - id: plugin-share
       name: plugin-share
-    - id: acryl-launcher-host
-      name: acryl-launcher-host
+    - id: acryl-launcher-desktop
+      name: acryl-launcher-desktop
     - id: server
       name: acryl-node-server
       config:
