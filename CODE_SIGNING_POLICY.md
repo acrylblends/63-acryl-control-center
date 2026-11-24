@@ -17,6 +17,7 @@ published as assets of this repository's releases: <https://github.com/acrylblen
   and the npm packages in `resources/app/node_modules`, each with its licence in its own `package.json` and licence file. A scan of the v0.2.19 Windows x64
   installer (2026-11-24, 541 packages) found MIT (469), Apache-2.0 (51), BSD-3-Clause (13), BSD-2-Clause, ISC, MPL-2.0, Python-2.0, Unlicense,
   MIT OR WTFPL, BlueOak-1.0.0 and, for sharp's libvips library, LGPL-3.0-or-later.
+  The installer's own helper `resources/elevate.exe` is [jpassing/elevate](https://github.com/jpassing/elevate), under the MIT licence (its `LICENSE.md`).
 
 ## Team roles
 
