@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The artifact configuration the SignPath project "windows-installer" uses (SignPath > project > Artifact configurations > add, slug `windows-installer`,
+  paste this). The release workflow uploads the Windows installer (ACRYL-Control-Center-win-x64.exe or -arm64.exe, an NSIS installer) as a GitHub Actions
+  artifact; SignPath receives it as a zip, signs the installer with Authenticode and returns it.
+  Only the installer is signed: the files inside it (the app's own .exe, the uninstaller) are written by the NSIS packer and are not signed separately.
+-->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <zip-file>
+    <pe-file path="ACRYL-Control-Center-win-*.exe">
+      <authenticode-sign/>
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

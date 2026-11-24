@@ -21,6 +21,14 @@ jobs:
     name: pack (${{ matrix.platform }} ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 100
+    # SignPath's action reads the uploaded unsigned artifact through the Actions API.
+    permissions:
+      contents: read
+      actions: read
+    env:
+      # Windows code signing (SignPath Foundation, CODE_SIGNING_POLICY.md): the steps below run only when the three repository secrets exist, so a release
+      # without them is exactly as before. Secrets cannot be tested in `if:`, so the token is read here.
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -50,6 +58,34 @@ jobs:
       - name: Pack ACRYL Control Center
         shell: bash
         run: npx --yes "$ACRYLBLENDS" pack --from blend --product "ACRYL Control Center" --arch ${{ matrix.arch }} --out out
+      # The Windows installer, signed by SignPath: the unsigned file goes up as an artifact of this run (SignPath only signs what this workflow built,
+      # and reads it from here), the signed one comes back into out/ and is what the release carries. Artifact configuration: .signpath/artifact-configuration.xml.
+      - name: Windows installer for SignPath
+        id: unsigned
+        if: matrix.platform == 'win' && github.event_name == 'push' && env.SIGNPATH_API_TOKEN != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unsigned-win-${{ matrix.arch }}
+          path: out/*.exe
+          if-no-files-found: error
+      - name: Sign the Windows installer (SignPath Foundation)
+        if: matrix.platform == 'win' && github.event_name == 'push' && env.SIGNPATH_API_TOKEN != ''
+        uses: signpath/github-action-submit-signing-request@a2c5b60d9c75f073142b653c354b632eedce097b # v3.2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: windows-installer
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+      - name: Release the signed installer
+        if: matrix.platform == 'win' && github.event_name == 'push' && env.SIGNPATH_API_TOKEN != ''
+        shell: bash
+        run: |
+          ls -la signed
+          cp signed/*.exe out/
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.platform }}-${{ matrix.arch }}

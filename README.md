@@ -19,6 +19,7 @@ The app, ready to install (the latest release, <https://github.com/acrylblends/6
 | Linux (Debian, Ubuntu) | [ACRYL-Control-Center-linux-arm64.deb](https://github.com/acrylblends/63-acryl-control-center/releases/latest/download/ACRYL-Control-Center-linux-arm64.deb) | [ACRYL-Control-Center-linux-x64.deb](https://github.com/acrylblends/63-acryl-control-center/releases/latest/download/ACRYL-Control-Center-linux-x64.deb) |
 
 The apps are not signed yet. macOS: the first start is right-click > Open. Windows: SmartScreen may ask, More info > Run anyway.
+Windows installers are being prepared for free code signing by [SignPath Foundation](https://signpath.org): see the [code signing policy](CODE_SIGNING_POLICY.md).
 Linux: `sudo apt install ./ACRYL-Control-Center-linux-x64.deb`. On Windows and Linux it uses the git on your machine.
 
 
